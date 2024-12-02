@@ -1,0 +1,48 @@
+﻿@page
+@model IndexModel
+@using Newtonsoft.Json
+
+<h1>Stock Market Tracker</h1>
+
+<form method="get">
+    <label for="symbol">Enter Stock Symbol:</label>
+    <input type="text" id="symbol" name="symbol" value="@Model.HistoricalStockData?.FirstOrDefault()?.Close" />
+    <button type="submit">Get Data</button>
+</form>
+
+@if (Model.HistoricalStockData != null && Model.HistoricalStockData.Any())
+{
+    <ul>
+        <li>Latest Close: @Model.HistoricalStockData.First().Close</li>
+        // other fields
+    </ul>
+}
+else
+{
+    <p>No data available for the selected stock symbol.</p>
+}
+
+    <canvas id="priceChart" width="800" height="400"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const labels = @Html.Raw(JsonConvert.SerializeObject(Model.HistoricalStockData.Select(d => d.Date.ToShortDateString()).ToList()));
+            const data = @Html.Raw(JsonConvert.SerializeObject(Model.HistoricalStockData.Select(d => d.Close).ToList()));
+
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Closing Price',
+                        data: data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                }
+            });
+        });
+    </script>
+}
